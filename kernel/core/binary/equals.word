@@ -1,0 +1,13 @@
+; @word = 
+	ld 		a,h
+	cp 		d
+	jr 		nz,__COMFalse
+	ld 		a,l
+	cp 		e
+	jr 		nz,__COMFalse
+__COMTrue:	
+	ld 		hl,$FFFF
+	ret
+__COMFalse:
+	ld 		hl,$0000
+	ret

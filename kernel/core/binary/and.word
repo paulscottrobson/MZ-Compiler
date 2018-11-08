@@ -1,0 +1,10 @@
+; @word and
+		ld 		a,h
+		and 	d
+		ld 		h,a
+		ld 		a,l
+		and 	e
+		ld 		l,a
+		ret
+
+		

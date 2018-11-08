@@ -1,0 +1,2 @@
+; @macro swap
+	ex 		de,hl

@@ -1,0 +1,20 @@
+; @word io.write.character
+
+WriteCharacter:
+		push 	bc
+		push 	de
+		push 	hl
+		ld 		bc,__WCContinue
+		push 	bc
+		ld 		bc,(SIScreenDriver)
+		push 	bc
+		ret
+__WCContinue:
+		pop 	hl
+		pop 	de
+		pop 	bc
+		ret
+
+
+
+

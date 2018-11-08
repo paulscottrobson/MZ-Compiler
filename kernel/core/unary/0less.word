@@ -1,0 +1,7 @@
+; @word 0<
+		bit 7,h
+		ld  hl,$0000
+		ret z
+		dec hl
+		ret
+

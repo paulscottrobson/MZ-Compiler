@@ -1,0 +1,6 @@
+; @word inkey
+		ex 		de,hl
+		call 	IOScanKeyboard
+		ld 		l,a
+		ld 		h,0
+		ret

@@ -1,0 +1,3 @@
+; @word <
+	dec 	hl
+	jp 		__COMP_LE

@@ -1,0 +1,6 @@
+; @macro 16*
+		add 	hl,hl
+		add 	hl,hl
+		add 	hl,hl
+		add 	hl,hl
+

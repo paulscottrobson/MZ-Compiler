@@ -1,0 +1,13 @@
+; @word <=
+
+__COMP_LE:
+	ld 		a,h
+    xor 	d
+    jp 		m,__LessEqual
+    sbc 	hl,de
+    jp 		nc,__COMTrue
+    jp 		__COMFalse
+__LessEqual:
+	bit 	7,d
+    jp 		z,__COMFalse
+    jp 		__COMTrue

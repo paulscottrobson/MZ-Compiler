@@ -1,0 +1,70 @@
+; @word debug
+
+DebugShow:	
+		push 	bc
+		push 	de
+		push 	hl
+
+		push 	bc
+		push 	de
+		push 	hl
+
+		ld 		a,(SIScreenHeight)					; on the bottom line
+		dec 	a
+		ld		e,a
+		ld		d,0
+		ld 		h,d
+		ld 		a,(SIScreenWidth)
+		ld 		l,a
+		call 	MULTMultiply16
+
+		pop 	de 									; display A
+		ld 		c,'A'
+		call 	__DisplayHexInteger
+
+		pop 	de 									; display B
+		ld 		c,'B'
+		call 	__DisplayHexInteger
+
+		pop 	de 									; display B
+		ld 		c,'C'
+		call 	__DisplayHexInteger
+
+		pop 	hl
+		pop 	de
+		pop 	bc
+		ret		
+
+__DisplayHexInteger:	
+		push 	de
+		ld 		d,5
+		ld 		e,c
+		set 	7,e
+		call 	WriteCharacter
+		inc 	hl
+		pop 	de
+		ld 		a,d
+		call 	__DisplayHexByte
+		ld 		a,e
+__DisplayHexByte:
+		push 	af
+		rrc 	a
+		rrc 	a
+		rrc 	a
+		rrc 	a
+		call 	__DisplayHexNibble
+		pop 	af
+__DisplayHexNibble:
+		push 	de
+		ld 		d,4
+		and 	15
+		cp 		10
+		jr 		c,__DHN2
+		add 	a,7
+__DHN2:	add 	a,48
+		ld 		e,a
+		call 	WriteCharacter
+		inc 	hl
+		pop 	de
+		ret
+

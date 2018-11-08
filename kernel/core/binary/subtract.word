@@ -1,0 +1,7 @@
+; @macro -
+		push 	de
+		ex 		de,hl
+		xor 	a
+		sbc 	hl,de
+		pop 	de
+

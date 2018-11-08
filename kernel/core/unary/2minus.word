@@ -1,0 +1,4 @@
+; @macro 2-
+		dec hl
+		dec hl
+

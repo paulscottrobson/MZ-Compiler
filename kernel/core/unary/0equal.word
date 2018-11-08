@@ -1,0 +1,8 @@
+; @word 0=
+		ld 	a,h
+		or  l
+		ld  hl,$0000
+		ret nz
+		dec hl
+		ret
+

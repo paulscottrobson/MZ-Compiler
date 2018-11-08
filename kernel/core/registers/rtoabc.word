@@ -1,0 +1,4 @@
+; @macro r>abc protected
+	pop 	hl
+	pop 	de
+	pop 	bc

@@ -1,0 +1,8 @@
+; @word p!
+		push 	bc
+		ld 		c,l
+		ld 		b,h
+		out 	(c),e
+		pop 	bc
+		ret
+

@@ -1,0 +1,7 @@
+; @word halt
+
+HaltZ80:
+		di
+		halt
+		jr 		HaltZ80
+

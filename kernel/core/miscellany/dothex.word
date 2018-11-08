@@ -1,0 +1,34 @@
+; @word .hex
+
+PrintHexWord:
+		ld 		a,' '
+		call 	PrintCharacter
+		ld 		a,h
+		call 	PrintHexByte
+		ld 		a,l
+		call 	PrintHexByte
+		ret
+
+; *********************************************************************************
+;
+;								Print A in hexadecimal
+;
+; *********************************************************************************
+		
+PrintHexByte:
+		push 	af
+		rrc 	a
+		rrc 	a
+		rrc 	a
+		rrc 	a
+		call 	__PrintNibble
+		pop 	af
+__PrintNibble:
+		and 	15
+		cp 		10
+		jr 		c,__PNIsDigit
+		add 	7
+__PNIsDigit:
+		add 	48
+		jp 		PrintCharacter
+		

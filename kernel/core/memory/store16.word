@@ -1,0 +1,6 @@
+; @macro !
+		ld 		(hl),e
+		inc 	hl
+		ld 		(hl),d
+		dec 	hl		
+		

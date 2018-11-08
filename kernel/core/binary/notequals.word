@@ -1,0 +1,8 @@
+; @word <>
+	ld 		a,h
+	cp 		d
+	jp 		nz,__COMTrue
+	ld 		a,l
+	cp 		e
+	jp 		nz,__COMTrue
+	jp 		__COMFalse

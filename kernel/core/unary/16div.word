@@ -1,0 +1,10 @@
+; @word 16/
+		sra 	h
+		rr 		l
+		sra 	h
+		rr 		l
+		sra 	h
+		rr 		l
+		sra 	h
+		rr 		l
+		ret

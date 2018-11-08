@@ -1,0 +1,18 @@
+; @word screen.mode.layer2
+
+SetScreenModeLayer2:
+		push 	de
+		push 	hl
+		call 	SetMode_Layer2
+		ld		(SIScreenDriver),de
+		ld 		a,l
+		ld 		(SIScreenWidth),a
+		ld 		a,h
+		ld 		(SIScreenHeight),a
+		ld 		hl,0
+		ld 		(IOScreenPosition),hl
+		pop 	hl
+		pop 	de
+		ret
+		
+

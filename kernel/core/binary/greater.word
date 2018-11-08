@@ -1,0 +1,12 @@
+; @word >
+__COMP_GT:
+	ld 		a,h
+    xor 	d
+    jp 		m,__Greater
+    sbc 	hl,de
+    jp 		c,__COMTrue
+    jp 		__COMFalse
+__Greater:
+	bit 	7,d
+    jp 		nz,__COMFalse
+    jp   		__COMTrue

@@ -1,0 +1,16 @@
+; @word io.emit
+		ld 		a,l
+PrintCharacter:
+		push 	de
+		push 	hl
+		ld 		e,a
+		ld 		a,(IOColour)
+		ld 		d,a
+		ld 		hl,(IOScreenPosition)
+		call 	WriteCharacter
+		inc 	hl
+		ld 		(IOScreenPosition),hl
+		pop 	hl
+		pop 	de
+		ret
+		

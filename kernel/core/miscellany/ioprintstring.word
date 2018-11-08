@@ -1,0 +1,14 @@
+; @word io.print.string
+
+PrintString:
+		push 	hl
+__IOASCIIZ:
+		ld 		a,(hl)
+		or 		a
+		jr 		z,__IOASCIIExit
+		call	PrintCharacter
+		inc 	hl
+		jr 		__IOASCIIZ
+__IOASCIIExit:
+		pop 	hl
+		ret

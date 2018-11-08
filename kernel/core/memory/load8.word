@@ -1,0 +1,4 @@
+; @macro c@
+		ld 		l,(hl)
+		ld 		h,0
+		

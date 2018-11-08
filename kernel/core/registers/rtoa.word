@@ -1,0 +1,2 @@
+; @macro r>a protected
+	pop 	hl

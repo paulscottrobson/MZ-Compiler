@@ -1,0 +1,2 @@
+; @macro b>r protected
+	push 	de

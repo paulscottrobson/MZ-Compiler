@@ -1,0 +1,2 @@
+; @macro a>r protected
+	push 	hl

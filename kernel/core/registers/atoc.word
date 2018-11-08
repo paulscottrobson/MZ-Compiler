@@ -1,0 +1,3 @@
+; @macro a>c
+	ld 		b,h
+	ld 		c,l

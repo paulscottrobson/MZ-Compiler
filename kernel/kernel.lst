@@ -1,6 +1,6 @@
               	; --------------------------------------
               	; zasm: assemble "kernel.asm"
-              	; date: 2018-11-09 06:11:47
+              	; date: 2018-11-09 07:57:00
               	; --------------------------------------
 
 
@@ -2216,5 +2216,5 @@ _end                                     = $C001 = 49153          kernel.asm:27 
 _size                                    = $4001 = 16385          kernel.asm:27 (unused)
 
 
-total time: 0.0088 sec.
+total time: 0.0069 sec.
 no errors

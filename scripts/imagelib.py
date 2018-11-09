@@ -17,6 +17,9 @@ class MZImage(object):
 		self.sysInfo = self.read(0,0x8004)+self.read(0,0x8005)*256
 		h.close()
 
+	def getSysInfo(self):
+		return self.sysInfo 
+		
 	def dictionaryPage(self):
 		return 0x20
 

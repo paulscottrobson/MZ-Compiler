@@ -1,8 +1,8 @@
 def check(b,a):
-	if b <= a:
-		print("FFFF")
+	if b < a:
+		print(b)
 	else:
-		print("0000")
+		print(a)
 
 check(3,2)
 check(2,2)

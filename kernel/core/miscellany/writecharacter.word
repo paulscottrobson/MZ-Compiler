@@ -1,4 +1,4 @@
-; @word io.write.character
+; @word screen.write.character
 
 WriteCharacter:
 		push 	bc

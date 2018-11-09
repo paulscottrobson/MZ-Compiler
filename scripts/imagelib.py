@@ -15,6 +15,7 @@ class MZImage(object):
 		h = open(fileName,"rb")
 		self.image = [x for x in h.read(-1)]
 		self.sysInfo = self.read(0,0x8004)+self.read(0,0x8005)*256
+		self.pageTable = self.read(0,self.sysInfo+16)+self.read(0,self.sysInfo+17)*256
 		h.close()
 
 	#
@@ -59,10 +60,14 @@ class MZImage(object):
 	#
 	#		Write byte to image
 	#
-	def write(self,page,address,data):
+	def write(self,page,address,data,dataType = 2):
 		self.expandImage(page,address)
 		assert data >= 0 and data < 256
 		self.image[self.address(page,address)] = data
+		if page >= 0x20:
+			pageTableEntry = self.pageTable + ((page - 0x20) >> 1)
+			if self.read(0,pageTableEntry) == 0:
+				self.write(0,pageTableEntry,dataType)
 	#
 	#		Expand physical size of image to include given address
 	#

@@ -25,10 +25,10 @@ SIBootCodeAddress:									; +8	Run from here
 		dw 		HaltZ80,0
 SIBootCodePage: 									; +12   Run page.
 		db		FirstCodePage,0,0,0
+SIPageUsage:										; +16 	Page Usage Table
+		dw 		PageUsage,0 			
 SIStack:											; +xx 	Initial stack value
 		dw 		StackTop,0							
-SIPageUsage:										; +xx 	Page Usage Table
-		dw 		PageUsage,0 			
 SIScreenWidth:										; +xx 	Screen Width
 		dw 		0,0
 SIScreenHeight:										; +xx 	Screen Height

@@ -21,7 +21,6 @@ FirstCodePage = $22
 			dw 		SystemInformation
 
 Boot:		ld 		sp,(SIStack)					; reset Z80 Stack
-			db 		$DD,$01
 			di										; enable interrupts
 			nextreg	7,2								; set turbo port (7) to 2 (14Mhz)
 			call 	SetScreenMode48kSpectrum 		; set screen mode

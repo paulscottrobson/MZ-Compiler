@@ -561,10 +561,10 @@ __mzdefine_73_79_73_2e_69_6e_66_6f_3a_3a_77:
   ret
 
 ; ---------------------------------------------------------
-; Name : io.write.character Type : word
+; Name : screen.write.character Type : word
 ; ---------------------------------------------------------
 
-__mzdefine_69_6f_2e_77_72_69_74_65_2e_63_68_61_72_61_63_74_65_72_3a_3a_77:
+__mzdefine_73_63_72_65_65_6e_2e_77_72_69_74_65_2e_63_68_61_72_61_63_74_65_72_3a_3a_77:
 WriteCharacter:
   push  bc
   push  de
@@ -834,7 +834,7 @@ __mzdefine_31_2b_3a_3a_6d_end:
 __mzdefine_32_35_36_2f_3a_3a_77:
   ld   l,h
   ld   h,0
-  bit  7,h
+  bit  7,l
   ret  z
   dec  h
   ret

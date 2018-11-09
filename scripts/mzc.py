@@ -83,10 +83,14 @@ class DictionaryImmediateWord(DictionaryEntry):
 #		Variable
 #
 class DictionaryVariableWord(DictionaryEntry):
+	def __init__(self,name,page,address):
+		DictionaryEntry.__init__(self,name,page,address)
+		self.makePrivate()
 	def getTypeByte(self):
-		return 14+0x80
+		return 14
 	def generateCode(self,compiler):
 		compiler.generateConstantCode(self.getAddress())
+
 #
 #		Code copying macro
 #
@@ -152,15 +156,28 @@ class Dictionary(object):
 			#		Go to next
 			#
 			p = p + self.image.read(dp,p)
-
+	#
+	#		See if word in dictionary
+	#
 	def find(self,word):
 		word = word.lower()
 		return self.elements[word] if word in self.elements else None
-
+	#
+	#		Add a new element to the Python dictionary.
+	#
 	def addDictionary(self,entry):
 		if entry.getName() in self.elements:
 			raise CompilerException("Duplicate word name '{0}'".format(entry.getName()))
 		self.elements[entry.getName()] = entry 
+	#
+	#		Synchronise the dictionary in the image memory with the Python version
+	#
+	def updateImageDictionary(self,image):
+		for w in self.elements.keys():
+			if self.elements[w].canTransferToImage():
+				self.elements[w].setInDictionaryFlag()
+				self.image.addDictionary(w,self.elements[w].getPage(),self.elements[w].getAddress())
+				self.image.xorLastTypeByte(self.elements[w].getTypeByte())
 
 # ***************************************************************************************
 #		
@@ -176,8 +193,24 @@ class Compiler(object):
 		self.sourcePage = self.image.currentCodePage()
 		self.sourceAddress = self.image.read(0,si+0) + self.image.read(0,si+1) * 256
 		self.dictionary = Dictionary(self.image)
-		self.echo = True
+		self.echo = False
 		#print("{0:x} {1:x}".format(self.sourcePage,self.sourceAddress))
+	#
+	#		Save back out. Update source position
+	#
+	def save(self):
+		si = self.image.getSysInfo()
+		#
+		#		Update code point
+		#
+		self.image.write(0,si+0,self.sourceAddress & 0xFF)
+		self.image.write(0,si+1,self.sourceAddress >> 8)
+		self.image.write(0,si+4,self.sourcePage)
+		#
+		#		Update dictionary and write out.
+		#
+		self.dictionary.updateImageDictionary(self.image)
+		self.image.save(self.objectFileName)
 	#
 	#		Compile a byte of code
 	#
@@ -338,10 +371,24 @@ class Compiler(object):
 
 
 c = Compiler()
-c.compileLine(': main debug halt ; ')
-c.image.save()	
+src = """
+: doit min .hex ;
+
+: main
+
+sys.info
+debug halt
+
+ """.replace("\n"," ")
+print(src)
+c.compileLine(src)
+c.save()	
 
 #
-# TODO: Write it back properly, updating source position and dictionary.
 # TODO: Missing control words.
+# TODO: Test I/O words (screen.write.char, inkey,screen.mode.*)
+# TODO: Rethink other I/O (in screen. ?)
 #
+# @ c@ ! c! +!
+# p@ p!
+# fill copy

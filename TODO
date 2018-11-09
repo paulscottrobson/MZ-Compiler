@@ -1,2 +1,2 @@
-* test core words
 * write unimplemented words into compiler
+* complete compiler (multiple files change src/tgt etc.)

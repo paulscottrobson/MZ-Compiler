@@ -328,7 +328,7 @@ class Compiler(object):
 		#
 
 		#
-		# 							for .. next
+		# 							for .. i .. next
 		#
 
 		#
@@ -372,11 +372,9 @@ class Compiler(object):
 
 c = Compiler()
 src = """
-: doit min .hex ;
-
 : main
 
-sys.info
+break 
 debug halt
 
  """.replace("\n"," ")
@@ -389,6 +387,3 @@ c.save()
 # TODO: Test I/O words (screen.write.char, inkey,screen.mode.*)
 # TODO: Rethink other I/O (in screen. ?)
 #
-# @ c@ ! c! +!
-# p@ p!
-# fill copy

@@ -17,36 +17,55 @@ class MZImage(object):
 		self.sysInfo = self.read(0,0x8004)+self.read(0,0x8005)*256
 		h.close()
 
+	#
+	#		Return sys.info address
+	#
 	def getSysInfo(self):
 		return self.sysInfo 
 		
+	#
+	#		Return dictionary page
+	#
 	def dictionaryPage(self):
 		return 0x20
 
+	#
+	#		Return page with code in.
+	#
 	def currentCodePage(self):
 		return self.read(0,self.sysInfo+4)
-
+	#
+	#		Convert a page/z80 address to an address in the image
+	#
 	def address(self,page,address):
 		assert address >= 0x8000 and address <= 0xFFFF
 		if address < 0xC000:
 			return address & 0x3FFF
 		else:
 			return (page - 0x20) * 0x2000 + 0x4000 + (address & 0x3FFF)
-
+	#
+	#		Read byte from image
+	#
 	def read(self,page,address):
 		self.expandImage(page,address)
 		return self.image[self.address(page,address)]
-
+	#
+	#		Write byte to image
+	#
 	def write(self,page,address,data):
 		self.expandImage(page,address)
 		assert data >= 0 and data < 256
 		self.image[self.address(page,address)] = data
-
+	#
+	#		Expand physical size of image to include given address
+	#
 	def expandImage(self,page,address):
 		required = self.address(page,address)
 		while len(self.image) <= required:
 			self.image.append(0x00)
-
+	#
+	#		Add a physical entry to the image dictionary
+	#
 	def addDictionary(self,name,page,address):
 		p = self.findEndDictionary()
 		#print("{0:04x} {1:20} {2:02x}:{3:04x}".format(p,name,page,address))
@@ -64,18 +83,24 @@ class MZImage(object):
 			self.write(dp,p+5+i,aname[i])
 		p = p + len(name) + 5
 		self.write(dp,p,0)
-
+	#
+	#		Modify the type byte of the last dictionary entry created
+	#
 	def xorLastTypeByte(self,n):
 		tByte = self.read(self.dictionaryPage(),self.lastDictionaryEntry+4)
 		tByte = tByte ^ n
 		self.write(self.dictionaryPage(),self.lastDictionaryEntry+4,tByte)
-
+	#
+	#		Find the end of the dictionary
+	#
 	def findEndDictionary(self):
 		p = 0xC000
 		while self.read(self.dictionaryPage(),p) != 0:
 			p = p + self.read(self.dictionaryPage(),p)
 		return p
-
+	#
+	#		Write the image file out.
+	#
 	def save(self,fileName = None):
 		fileName = self.fileName if fileName is None else fileName
 		h = open(fileName,"wb")
@@ -87,5 +112,4 @@ if __name__ == "__main__":
 	print(len(z.image))
 	print(z.address(z.dictionaryPage(),0xC000))
 	z.save()
-
 

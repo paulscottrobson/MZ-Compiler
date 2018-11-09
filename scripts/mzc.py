@@ -10,7 +10,7 @@
 # ***************************************************************************************
 
 from imagelib import *
-import re
+import re,sys
 
 # ***************************************************************************************
 #
@@ -62,24 +62,34 @@ class DictionaryEntry(object):
 #
 # ***************************************************************************************
 
+#
+#		Normal word
+#
 class DictionaryStandardWord(DictionaryEntry):
 	def getTypeByte(self):
 		return DictionaryEntry.getTypeByte(self)+0
 	def generateCode(self,compiler):
 		compiler.generateCallCode(self.getPage(),self.getAddress())
 
+#
+#		Immediate word (which we can't use)
+#
 class DictionaryImmediateWord(DictionaryEntry):
 	def getTypeByte(self):
 		return DictionaryEntry.getTypeByte(self)+15
 	def generateCode(self,compiler):
 		raise CompilerException("Cannot process immediate words in Python compiler")
-
+#
+#		Variable
+#
 class DictionaryVariableWord(DictionaryEntry):
 	def getTypeByte(self):
 		return 14+0x80
 	def generateCode(self,compiler):
 		compiler.generateConstantCode(self.getAddress())
-
+#
+#		Code copying macro
+#
 class DictionaryMacroWord(DictionaryEntry):
 	def __init__(self,name,page,address,size):
 		DictionaryEntry.__init__(self,name,page,address)
@@ -102,20 +112,30 @@ class Dictionary(object):
 		self.image = image
 		self.elements = {}
 		self.loadImageDictionary()
-
+	#
+	#		Load the dictionary from the image into a Python structure
+	#
 	def loadImageDictionary(self):
 		dp = self.image.dictionaryPage()
 		p = 0xC000
 		while self.image.read(dp,p) != 0:
+			#
+			#		Basic information
+			#
 			page = self.image.read(dp,p+1)
 			address = self.image.read(dp,p+2) + self.image.read(dp,p+3) * 256
 			typeByte = self.image.read(dp,p+4)
+			#
+			#		Get Name
+			#
 			p1 = p + 5
 			name = ""
 			while p1 is not None:
 				name += chr(self.image.read(dp,p1) & 0x7F)
 				p1 = (p1 + 1) if (self.image.read(dp,p1) & 0x80) == 0 else None
-
+			#
+			#		Create equivalent DictionaryEntry type
+			#
 			if (typeByte & 0x0F) == 0:
 				self.elements[name] = DictionaryStandardWord(name,page,address)
 			elif (typeByte & 0x0F) == 15:
@@ -124,8 +144,13 @@ class Dictionary(object):
 				size = typeByte & 0x0F
 				assert size >= 1 and size < 10
 				self.elements[name] = DictionaryMacroWord(name,page,address,size)
-
+			#
+			#		Mark as already being in the dictionary in image
+			#
 			self.elements[name].setInDictionaryFlag()
+			#
+			#		Go to next
+			#
 			p = p + self.image.read(dp,p)
 
 	def find(self,word):
@@ -148,22 +173,31 @@ class Compiler(object):
 		self.objectFileName = objectFile
 		self.image = MZImage(sourceFile)
 		si = self.image.getSysInfo()
-		self.sourcePage = self.image.read(0,si+4)
+		self.sourcePage = self.currentCodePage()
 		self.sourceAddress = self.image.read(0,si+0) + self.image.read(0,si+1) * 256
 		self.dictionary = Dictionary(self.image)
+		self.echo = True
 		#print("{0:x} {1:x}".format(self.sourcePage,self.sourceAddress))
-
+	#
+	#		Compile a byte of code
+	#
 	def cByte(self,byte):
-		print("{0:02x}:{1:04x} {2:02x}".format(self.sourcePage,self.sourceAddress,byte))
+		if self.echo:
+			print("{0:02x}:{1:04x} {2:02x}".format(self.sourcePage,self.sourceAddress,byte))
 		self.image.write(self.sourcePage,self.sourceAddress,byte)
 		self.sourceAddress += 1
-
+	#
+	#		Compile a word of code
+	#
 	def cWord(self,word):
-		print("{0:02x}:{1:04x} {2:04x}".format(self.sourcePage,self.sourceAddress,word))
+		if self.echo:
+			print("{0:02x}:{1:04x} {2:04x}".format(self.sourcePage,self.sourceAddress,word))
 		self.image.write(self.sourcePage,self.sourceAddress,word & 0xFF)
 		self.image.write(self.sourcePage,self.sourceAddress+1,word >> 8)
 		self.sourceAddress += 2
-
+	#
+	#		Compile a single line of code
+	#
 	def compileLine(self,line):
 		line = line if line.find("//") < 0 else line[:line.find("//")]
 		self.lineSource = [x for x in line.split(" ") if x != ""]
@@ -172,16 +206,21 @@ class Compiler(object):
 		while word is not None:
 			self.compileWord(word)
 			word = self.get()
-
+	#
+	#		Get next word in line
+	#
 	def get(self):
 		if self.lineSourceIndex >= len(self.lineSource):
 			return None
 		word = self.lineSource[self.lineSourceIndex]
 		self.lineSourceIndex += 1
 		return word
-
+	#
+	#		Compile a word
+	#
 	def compileWord(self,word):
-		print("***** {0} *****".format(word))
+		if self.echo:
+			print("***** {0} *****".format(word))
 		#
 		# 								defining word
 		#
@@ -245,24 +284,40 @@ class Compiler(object):
 				self.cByte(0x2A)											# LD HL,(xxxx)
 				self.cWord(entry.getAddress())
 			return
+		#
+		# 							begin .. -until/until/again
+		#
 
-		# begin .. -until/until/again
-		# if .. then
-		# for .. next
-		# private
-		# protected
+		#
+		# 							if .. then
+		#
+
+		#
+		# 							for .. next
+		#
+
+		#
+		# 				 private, protected and other control words
+		#
+
 		raise CompilerException("Unknown word '{0}'".format(word))
-
+	#
+	#		Generate code to call page:address from here.
+	#
 	def generateCallCode(self,page,address):
 		assert self.sourcePage == page,"Paging calls not implemented"
 		self.cByte(0xCD)													# CALL xxxx
 		self.cWord(address)
-
+	#
+	#		Generate code to do A->B ; A := <constant>
+	#
 	def generateConstantCode(self,const):
 		self.cByte(0xEB) 													# EX DE,HL
 		self.cByte(0x21) 													# LD HL,xxxx
 		self.cWord(const)
-
+	#
+	#		Generate an inline string and return its logical address
+	#
 	def generateString(self,str):
 		self.cByte(0x18)													# JR xx
 		self.cByte(len(str)+1)
@@ -271,11 +326,14 @@ class Compiler(object):
 			self.cByte(ord(c))
 		self.cByte(0x00)
 		return addr
-
+	#
+	#		Generate code from a macro / code copier word
+	#
 	def generateMacroCode(self,size,address):
 		for i in range(0,size):
 			self.cByte(self.image.read(self.sourcePage,address))
 			address += 1
+
 
 c = Compiler()
 c.compileLine('debug : demo c@ 42 "he_lo ; demo variable v1 v1 !! v1 && v1 @@ v1')

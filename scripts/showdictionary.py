@@ -16,7 +16,9 @@ from imagelib import *
 image = MZImage()
 p = 0xC000
 dictPage = image.dictionaryPage()
+
 while image.read(dictPage,p) != 0:
+
 	page = image.read(dictPage,p+1)
 	addr = image.read(dictPage,p+2) + 256 * image.read(dictPage,p+3)
 	name = ""

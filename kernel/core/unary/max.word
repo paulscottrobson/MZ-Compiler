@@ -1,0 +1,17 @@
+; @word max
+
+	ld 		a,h
+    xor 	d
+    jp 		m,__Max2
+    push 	hl
+    sbc 	hl,de
+    pop 	hl
+    ret 	nc
+    ex 		de,hl
+    ret
+
+__Max2:
+	bit 	7,h
+	ret 	z
+	ex 		de,hl
+	ret

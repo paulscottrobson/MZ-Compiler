@@ -14,13 +14,33 @@ from imagelib import *
 
 image = MZImage()
 
-src = [x.lower() for x in open("kernel.lst").readlines() if x[:10] == "__mzdefine"]
-src.sort()
-for l in src:
-	m = re.match("^__mzdefine_([0-9a-f_]+)\s*\=\s*\$([0-9a-f]+)",l)
-	assert m is not None
-	word = "".join([chr(int(x,16)) for x in m.group(1).split("_")])
-	address = int(m.group(2),16)
-	image.addDictionary(word,image.currentCodePage(),address)
+labels = {}
+for l in [x.lower() for x in open("kernel.lst").readlines() if x[:10] == "__mzdefine"]:
+	m = re.match("^__mzdefine_([0-9a-fnd_]+)\s*\=\s*\$([0-9a-f]+)",l)
+	assert m is not None,l+" syntax"
+	assert m.group(1) not in labels,l+" duplicate"
+	labels[m.group(1)] = int(m.group(2),16)
+
+keys = [x for x in labels.keys()]
+keys.sort(key = lambda x:labels[x])
+
+for l in keys:
+	if l[-4:] != "_end":
+		word = "".join([chr(int(x,16)) for x in l.split("_")])
+		isProtected = False
+		if word[-1] == "p":
+			isProtected = True
+			word = word[:-1]
+		wType = word[-1]
+		assert wType == "m" or wType == "w"
+		wName = word[:-3]
+		#print(wType,wName,labels[l])
+		image.addDictionary(wName,image.currentCodePage(),labels[l])
+		if wType == "m":
+			size = labels[l+"_end"]-labels[l]
+			assert size <= 6,"Macro size for "+wName+ "??"
+			image.xorLastTypeByte(size)
+		if isProtected:
+			image.xorLastTypeByte(0x40)
 image.save()
 

@@ -49,15 +49,23 @@ class MZImage(object):
 		#print("{0:04x} {1:20} {2:02x}:{3:04x}".format(p,name,page,address))
 		assert len(name) < 32 and name != "","Bad name '"+name+"'"
 		dp = self.dictionaryPage()
+		self.lastDictionaryEntry = p
 		self.write(dp,p+0,len(name)+5)
 		self.write(dp,p+1,page)
 		self.write(dp,p+2,address & 0xFF)
 		self.write(dp,p+3,address >> 8)
-		self.write(dp,p+4,len(name) & 0x1F)
-		for i in range(0,len(name)):
-			self.write(dp,p+5+i,ord(name[i]))
+		self.write(dp,p+4,0)
+		aname = [ord(x) for x in name]
+		aname[-1] = aname[-1] + 0x80
+		for i in range(0,len(aname)):
+			self.write(dp,p+5+i,aname[i])
 		p = p + len(name) + 5
 		self.write(dp,p,0)
+
+	def xorLastTypeByte(self,n):
+		tByte = self.read(self.dictionaryPage(),self.lastDictionaryEntry+4)
+		tByte = tByte ^ n
+		self.write(self.dictionaryPage(),self.lastDictionaryEntry+4,tByte)
 
 	def findEndDictionary(self):
 		p = 0xC000

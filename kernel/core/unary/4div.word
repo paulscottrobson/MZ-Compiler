@@ -1,5 +1,7 @@
-; @macro 4/
+; @word 4/
 		sra 	h
 		rr 		l
 		sra 	h
 		rr 		l
+		ret
+		

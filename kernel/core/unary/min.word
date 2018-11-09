@@ -1,0 +1,17 @@
+; @word min
+
+	ld 		a,h
+    xor 	d
+    jp 		m,__Min2
+    push 	hl
+    sbc 	hl,de
+    pop 	hl
+    ret 	c
+    ex 		de,hl
+    ret
+
+__Min2:
+	bit 	7,h
+	ret 	nz
+	ex 		de,hl
+	ret

@@ -32,11 +32,13 @@ for f in fileList:
 		wName = wName[:-9].strip()
 		isProtected = True
 	assert wType == "word" or wType == "macro","Bad type for "+f
-	scrambleName = "__mzdefine_"+"_".join("{0:02x}".format(ord(c)) for c in wName)
 
 	h.write("; ---------------------------------------------------------\n")
 	h.write("; Name : {0} Type : {1}\n".format(m.group(2).lower().strip(),wType))
 	h.write("; ---------------------------------------------------------\n\n")
+
+	wName = wName + "::"+wType[0]+("p" if isProtected else "")
+	scrambleName = "__mzdefine_"+"_".join("{0:02x}".format(ord(c)) for c in wName)
 
 	if wType == "word":
 		h.write("{0}:\n".format(scrambleName))
@@ -45,15 +47,11 @@ for f in fileList:
 
 	if wType == "macro":			
 		h.write("{0}:\n".format(scrambleName))
-		h.write("  nop\n")
-		if isProtected:
-				h.write("  ret\n")
-		h.write("  ld a,end_{0}-{0}-3\n".format(scrambleName))
 		for s in src[1:]:
 			h.write(s+"\n")
-		if wName != ";":
+		if wName != ";::mp":
 			assert src[-1].strip() != "ret","Macro "+wName+" ends in ret"
-		h.write("end_{0}:\n".format(scrambleName))
+		h.write("{0}_end:\n".format(scrambleName))
 		h.write("  ret\n")
 			
 	#print(wName,scrambleName,wType)

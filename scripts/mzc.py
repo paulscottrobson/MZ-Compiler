@@ -173,7 +173,7 @@ class Compiler(object):
 		self.objectFileName = objectFile
 		self.image = MZImage(sourceFile)
 		si = self.image.getSysInfo()
-		self.sourcePage = self.currentCodePage()
+		self.sourcePage = self.image.currentCodePage()
 		self.sourceAddress = self.image.read(0,si+0) + self.image.read(0,si+1) * 256
 		self.dictionary = Dictionary(self.image)
 		self.echo = True
@@ -230,6 +230,8 @@ class Compiler(object):
 				raise CompilerException("Missing word name for :")
 			newEntry = DictionaryStandardWord(word,self.sourcePage,self.sourceAddress)
 			self.dictionary.addDictionary(newEntry)
+			if word == "main":
+				self.image.setRunAddress(self.sourcePage,self.sourceAddress)
 			return			
 		#
 		# 								dictionary words
@@ -336,5 +338,10 @@ class Compiler(object):
 
 
 c = Compiler()
-c.compileLine('debug : demo c@ 42 "he_lo ; demo variable v1 v1 !! v1 && v1 @@ v1')
+c.compileLine(': main debug halt ; ')
 c.image.save()	
+
+#
+# TODO: Write it back properly, updating source position and dictionary.
+# TODO: Missing control words.
+#

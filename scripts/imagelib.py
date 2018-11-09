@@ -35,6 +35,13 @@ class MZImage(object):
 	def currentCodePage(self):
 		return self.read(0,self.sysInfo+4)
 	#
+	#		Set boot address
+	#
+	def setRunAddress(self,page,address):
+		self.write(0,self.sysInfo+8,address & 0xFF)
+		self.write(0,self.sysInfo+9,address >> 8)
+		self.write(0,self.sysInfo+12,page)
+	#
 	#		Convert a page/z80 address to an address in the image
 	#
 	def address(self,page,address):

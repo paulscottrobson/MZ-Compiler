@@ -17,11 +17,11 @@ image = MZImage()
 #		Read in all the __mzdefine(*) labels
 #
 labels = {}
-for l in [x.lower() for x in open("kernel.lst").readlines() if x[:10] == "__mzdefine"]:
-	m = re.match("^__mzdefine_([0-9a-fnd_]+)\s*\=\s*\$([0-9a-f]+)",l)
+for l in [x.lower().strip() for x in open("boot.img.vice").readlines() if x.find("__MZDEFINE") > 0]:
+	m = re.match("^al\s*c\:\s*([0-9a-f]+) ___mzdefine_([0-9a-fnd_]+)$",l)
 	assert m is not None,l+" syntax"
-	assert m.group(1) not in labels,l+" duplicate"
-	labels[m.group(1)] = int(m.group(2),16)
+	assert m.group(2) not in labels,l+" duplicate"
+	labels[m.group(2)] = int(m.group(1),16)
 #
 #		Sort them by address
 #

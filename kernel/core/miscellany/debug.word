@@ -37,7 +37,7 @@ DebugShow:
 
 __DisplayHexInteger:	
 		push 	de
-		ld 		d,5
+		ld 		d,6
 		ld 		e,c
 		set 	7,e
 		call 	WriteCharacter

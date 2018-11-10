@@ -23,7 +23,7 @@ FirstCodePage = $22
 Boot:		ld 		sp,(SIStack)					; reset Z80 Stack
 			di										; enable interrupts
 			nextreg	7,2								; set turbo port (7) to 2 (14Mhz)
-			call 	SetScreenMode48kSpectrum 		; set screen mode
+			call 	GraphicInitialise 				; initialise and clear screen.
 			ld 		a,(SIBootCodePage) 				; get the page to start
 			nextreg $56,a
 			inc 	a
@@ -37,9 +37,6 @@ Boot:		ld 		sp,(SIStack)					; reset Z80 Stack
 			include "support/multiply.asm"			; support functions
 			include "support/divide.asm"
 			include "support/keyboard.asm"
-			include "support/drivers/screen48k.asm"
-			include "support/drivers/screen_layer2.asm"
-			include "support/drivers/screen_lores.asm"
 
 AlternateFont:
 			include "font.inc"

@@ -1,3 +1,5 @@
+; @codeonly
+
 ; *********************************************************************************
 ; *********************************************************************************
 ;
@@ -15,7 +17,8 @@
 ;
 ; *********************************************************************************
 
-SetMode_Layer2:
+
+GFXInitialise:
 		push 	af
 		push 	bc
 		push 	de
@@ -46,12 +49,12 @@ L2PClearBank: 										; assume default palette :)
 		pop 	bc
 		pop 	af
 		ld 		hl,$1820 							; still 32 x 24 	
-		ld 		de,WriteCharacter_Layer2
+		ld 		de,GFXPrintCharacter
 		ret
 ;
 ;		Print Character E, colour D, position HL
 ;
-WriteCharacter_Layer2:
+GFXPrintCharacter:
 		push 	af
 		push 	bc
 		push 	de
@@ -59,6 +62,7 @@ WriteCharacter_Layer2:
 		push 	ix
 
 		ld 		b,e 								; save A temporarily
+		ld 		a,b
 		and 	$7F
 		cp 		32
 		jr 		c,__L2Exit 							; check char in range

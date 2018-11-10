@@ -1,4 +1,0 @@
-; @word io.colour
-		ld 		l,a
-		ld 		(IOColour),a
-		ret

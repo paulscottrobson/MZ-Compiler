@@ -1,4 +1,4 @@
-; @word screen.write.character
+; @word gfx.write.char
 
 WriteCharacter:
 		push 	bc

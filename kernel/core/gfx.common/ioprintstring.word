@@ -1,4 +1,4 @@
-; @word io.print.string
+; @codeonly
 
 PrintString:
 		push 	hl

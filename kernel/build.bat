@@ -11,7 +11,7 @@ del /Q ..\files\boot.img
 rem
 rem	Assemble the kernel file.
 rem
-python ..\scripts\buildwords.py
+python ..\scripts\buildwords.py 48k
 ..\bin\snasm -next -vice kernel.asm boot.img
 rem
 rem	Create the core dictionary.

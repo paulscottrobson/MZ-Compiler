@@ -9,15 +9,22 @@
 # ***************************************************************************************
 # ***************************************************************************************
 
-import os,re
+import os,re,sys
 #
-#			Create file list of words
+#			Create file list of words, filtering if.xxx 
 #
+conditions = [x.lower() for x in sys.argv[1:]]
 fileList = []
 for root,dirs,files in os.walk("core"):
-	for f in files:
-		if f[-5:] == ".word":
-			fileList.append(root+os.sep+f)
+	isOk = True
+	for p in root.split(os.sep):
+		if p[:3].lower() == "if.":
+			if p[3:].lower() not in conditions:
+				isOk = False
+	if isOk:
+		for f in files:
+			if f[-5:] == ".word":
+				fileList.append(root+os.sep+f)
 fileList.sort()
 #
 #			Work through them
@@ -32,7 +39,7 @@ for f in fileList:
 	#
 	#		Look for ; @<something> <name> [protected]
 	#
-	m = re.match("^\;\s*\@(\w+)\s+(.*)$",src[0])
+	m = re.match("^\;\s*\@(\w+)\s*(.*)$",src[0])
 	assert m is not None,"Failing for "+f+" first line is "+src[0]	
 	#
 	#		analyse the results of that
@@ -43,7 +50,7 @@ for f in fileList:
 	if wName[-9:] == "protected":
 		wName = wName[:-9].strip()
 		isProtected = True
-	assert wType == "word" or wType == "macro","Bad type for "+f
+	assert wType == "word" or wType == "macro" or wType == "codeonly","Bad type for "+f
 	#
 	#		output information to the composite file
 	#
@@ -74,6 +81,12 @@ for f in fileList:
 			assert src[-1].strip() != "ret","Macro "+wName+" ends in ret"
 		h.write("{0}_end:\n".format(scrambleName))
 		h.write("  ret\n")
+	#
+	#		output code if code only
+	#
+	if wType == "codeonly":
+		for s in src[1:]:
+			h.write(s+"\n")
 			
 	#print(wName,scrambleName,wType)
 	h.write("\n")

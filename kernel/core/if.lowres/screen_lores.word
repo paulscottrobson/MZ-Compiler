@@ -1,3 +1,5 @@
+; @codeonly
+
 ; *********************************************************************************
 ; *********************************************************************************
 ;
@@ -15,7 +17,9 @@
 ;
 ; *********************************************************************************
 
-SetMode_LowRes:
+; @codeonly
+
+GFXInitialise:
 		push 	af
 		push 	bc
 		push 	de
@@ -42,12 +46,12 @@ LowClearScreen: 									; assume default palette :)
 		pop 	bc
 		pop 	af
 		ld 		hl,$0C10 							; resolution is 16x12 chars
-		ld 		de,LowPrintCharacter
+		ld 		de,GFXPrintCharacter
 		ret
 ;
 ;		Print Character E Colour D @ HL
 ;
-LowPrintCharacter:
+GFXPrintCharacter:
 		push 	af
 		push 	bc
 		push 	de
@@ -55,6 +59,7 @@ LowPrintCharacter:
 		push 	ix
 
 		ld 		b,e 								; save character in B
+		ld 		a,e
 		and 	$7F
 		cp 		32
 		jr 		c,__LPExit

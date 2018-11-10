@@ -169,6 +169,206 @@ __mzdefine_78_6f_72_3a_3a_77:
   ret
 
 ; ---------------------------------------------------------
+; Name : gfx.initialise Type : word
+; ---------------------------------------------------------
+
+__mzdefine_67_66_78_2e_69_6e_69_74_69_61_6c_69_73_65_3a_3a_77:
+GraphicInitialise:
+  push  de
+  push  hl
+  call  GFXInitialise
+  ld  (SIScreenDriver),de
+  ld   a,l
+  ld   (SIScreenWidth),a
+  ld   a,h
+  ld   (SIScreenHeight),a
+  ld   hl,0
+  ld   (IOScreenPosition),hl
+  pop  hl
+  pop  de
+  ret
+
+; ---------------------------------------------------------
+; Name :  Type : codeonly
+; ---------------------------------------------------------
+
+  ld   a,l
+PrintCharacter:
+  push  de
+  push  hl
+  ld   e,a
+  ld   a,(IOColour)
+  ld   d,a
+  ld   hl,(IOScreenPosition)
+  call  WriteCharacter
+  inc  hl
+  ld   (IOScreenPosition),hl
+  pop  hl
+  pop  de
+  ret
+
+; ---------------------------------------------------------
+; Name :  Type : codeonly
+; ---------------------------------------------------------
+
+PrintString:
+  push  hl
+__IOASCIIZ:
+  ld   a,(hl)
+  or   a
+  jr   z,__IOASCIIExit
+  call PrintCharacter
+  inc  hl
+  jr   __IOASCIIZ
+__IOASCIIExit:
+  pop  hl
+  ret
+
+; ---------------------------------------------------------
+; Name : gfx.write.char Type : word
+; ---------------------------------------------------------
+
+__mzdefine_67_66_78_2e_77_72_69_74_65_2e_63_68_61_72_3a_3a_77:
+WriteCharacter:
+  push  bc
+  push  de
+  push  hl
+  ld   bc,__WCContinue
+  push  bc
+  ld   bc,(SIScreenDriver)
+  push  bc
+  ret
+__WCContinue:
+  pop  hl
+  pop  de
+  pop  bc
+  ret
+
+; ---------------------------------------------------------
+; Name :  Type : codeonly
+; ---------------------------------------------------------
+
+; *********************************************************************************
+; *********************************************************************************
+;
+;  File:  screen48k.asm
+;  Purpose: Hardware interface to Spectrum display, standard but with
+;     sprites enabled.
+;  Date :   8th November 2018
+;  Author:  paul@robsons.org.uk
+;
+; *********************************************************************************
+; *********************************************************************************
+; *********************************************************************************
+;
+;      Call the SetMode for the Spectrum 48k
+;
+; *********************************************************************************
+GFXInitialise:
+  push  af          ; save registers
+  push  bc
+  ld   bc,$123B        ; Layer 2 access port
+  ld   a,0         ; disable Layer 2
+  out  (c),a
+  nextreg $15,$3        ; Disable LowRes but enable Sprites
+  ld   hl,$4000        ; clear pixel memory
+__cs1: ld   (hl),0
+  inc  hl
+  ld   a,h
+  cp   $58
+  jr   nz,__cs1
+__cs2: ld   (hl),$47       ; clear attribute memory
+  inc  hl
+  ld   a,h
+  cp   $5B
+  jr   nz,__cs2
+  xor  a          ; border off
+  out  ($FE),a
+  pop  bc
+  pop  af
+  ld   hl,$1820        ; H = 24,L = 32, screen extent
+  ld   de,GFXPrintCharacter
+  ret
+; *********************************************************************************
+;
+;    Write a character E on the screen at HL, in colour D
+;
+; *********************************************************************************
+GFXPrintCharacter:
+  push  af          ; save registers
+  push  bc
+  push  de
+  push  hl
+  ld   b,e         ; character in B
+  ld   a,h         ; check range.
+  cp   3
+  jr   nc,__ZXWCExit
+;
+;  work out attribute position
+;
+  push  hl          ; save position.
+  ld   a,h
+  add  $58
+  ld   h,a
+  ld   a,d         ; get current colour
+  and  7           ; mask 0..2
+  or   $40          ; make bright
+  ld   (hl),a         ; store it.
+  pop  hl
+;
+;  calculate screen position => HL
+;
+  push  de
+  ex   de,hl
+  ld   l,e         ; Y5 Y4 Y3 X4 X3 X2 X1 X0
+  ld   a,d
+  and  3
+  add  a,a
+  add  a,a
+  add  a,a
+  or   $40
+  ld   h,a
+  pop  de
+;
+;  char# 32-127 to font address => DE
+;
+  push  hl
+  ld   a,b         ; get character
+  and  $7F         ; bits 0-6 only.
+  sub  32
+  ld   l,a         ; put in HL
+  ld   h,0
+  add  hl,hl         ; x 8
+  add  hl,hl
+  add  hl,hl
+  ld   de,(SIFontBase)      ; add the font base.
+  add  hl,de
+  ex   de,hl         ; put in DE (font address)
+  pop  hl
+;
+;  copy font data to screen position.
+;
+  ld   a,b
+  ld   b,8         ; copy 8 characters
+  ld   c,0         ; XOR value 0
+  bit  7,a         ; is the character reversed
+  jr   z,__ZXWCCopy
+  dec  c          ; C is the XOR mask now $FF
+__ZXWCCopy:
+  ld   a,(de)        ; get font data
+  xor  c          ; xor with reverse
+  ld   (hl),a         ; write back
+  inc  h          ; bump pointers
+  inc  de
+  djnz  __ZXWCCopy        ; do B times.
+__ZXWCExit:
+  pop  hl          ; restore and exit
+  pop  de
+  pop  bc
+  pop  af
+  ret
+
+; ---------------------------------------------------------
 ; Name : +! Type : word
 ; ---------------------------------------------------------
 
@@ -328,7 +528,7 @@ DebugShow:
   ret
 __DisplayHexInteger:
   push  de
-  ld   d,5
+  ld   d,6
   ld   e,c
   set  7,e
   call  WriteCharacter
@@ -425,53 +625,6 @@ HaltZ80:
   jr   HaltZ80
 
 ; ---------------------------------------------------------
-; Name : io.colour Type : word
-; ---------------------------------------------------------
-
-__mzdefine_69_6f_2e_63_6f_6c_6f_75_72_3a_3a_77:
-  ld   l,a
-  ld   (IOColour),a
-  ret
-
-; ---------------------------------------------------------
-; Name : io.emit Type : word
-; ---------------------------------------------------------
-
-__mzdefine_69_6f_2e_65_6d_69_74_3a_3a_77:
-  ld   a,l
-PrintCharacter:
-  push  de
-  push  hl
-  ld   e,a
-  ld   a,(IOColour)
-  ld   d,a
-  ld   hl,(IOScreenPosition)
-  call  WriteCharacter
-  inc  hl
-  ld   (IOScreenPosition),hl
-  pop  hl
-  pop  de
-  ret
-
-; ---------------------------------------------------------
-; Name : io.print.string Type : word
-; ---------------------------------------------------------
-
-__mzdefine_69_6f_2e_70_72_69_6e_74_2e_73_74_72_69_6e_67_3a_3a_77:
-PrintString:
-  push  hl
-__IOASCIIZ:
-  ld   a,(hl)
-  or   a
-  jr   z,__IOASCIIExit
-  call PrintCharacter
-  inc  hl
-  jr   __IOASCIIZ
-__IOASCIIExit:
-  pop  hl
-  ret
-
-; ---------------------------------------------------------
 ; Name : inkey Type : word
 ; ---------------------------------------------------------
 
@@ -480,66 +633,6 @@ __mzdefine_69_6e_6b_65_79_3a_3a_77:
   call  IOScanKeyboard
   ld   l,a
   ld   h,0
-  ret
-
-; ---------------------------------------------------------
-; Name : screen.mode.48k Type : word
-; ---------------------------------------------------------
-
-__mzdefine_73_63_72_65_65_6e_2e_6d_6f_64_65_2e_34_38_6b_3a_3a_77:
-SetScreenMode48kSpectrum:
-  push  de
-  push  hl
-  call  SetMode_Spectrum48k
-  ld  (SIScreenDriver),de
-  ld   a,l
-  ld   (SIScreenWidth),a
-  ld   a,h
-  ld   (SIScreenHeight),a
-  ld   hl,0
-  ld   (IOScreenPosition),hl
-  pop  hl
-  pop  de
-  ret
-
-; ---------------------------------------------------------
-; Name : screen.mode.layer2 Type : word
-; ---------------------------------------------------------
-
-__mzdefine_73_63_72_65_65_6e_2e_6d_6f_64_65_2e_6c_61_79_65_72_32_3a_3a_77:
-SetScreenModeLayer2:
-  push  de
-  push  hl
-  call  SetMode_Layer2
-  ld  (SIScreenDriver),de
-  ld   a,l
-  ld   (SIScreenWidth),a
-  ld   a,h
-  ld   (SIScreenHeight),a
-  ld   hl,0
-  ld   (IOScreenPosition),hl
-  pop  hl
-  pop  de
-  ret
-
-; ---------------------------------------------------------
-; Name : screen.mode.lowres Type : word
-; ---------------------------------------------------------
-
-__mzdefine_73_63_72_65_65_6e_2e_6d_6f_64_65_2e_6c_6f_77_72_65_73_3a_3a_77:
-SetScreenModeLowRes:
-  push  de
-  push  hl
-  call  SetMode_LowRes
-  ld  (SIScreenDriver),de
-  ld   a,l
-  ld   (SIScreenWidth),a
-  ld   a,h
-  ld   (SIScreenHeight),a
-  ld   hl,0
-  ld   (IOScreenPosition),hl
-  pop  hl
-  pop  de
   ret
 
 ; ---------------------------------------------------------
@@ -558,26 +651,6 @@ __mzdefine_3b_3a_3a_6d_70_end:
 __mzdefine_73_79_73_2e_69_6e_66_6f_3a_3a_77:
   ex   de,hl
   ld   hl,SystemInformation
-  ret
-
-; ---------------------------------------------------------
-; Name : screen.write.character Type : word
-; ---------------------------------------------------------
-
-__mzdefine_73_63_72_65_65_6e_2e_77_72_69_74_65_2e_63_68_61_72_61_63_74_65_72_3a_3a_77:
-WriteCharacter:
-  push  bc
-  push  de
-  push  hl
-  ld   bc,__WCContinue
-  push  bc
-  ld   bc,(SIScreenDriver)
-  push  bc
-  ret
-__WCContinue:
-  pop  hl
-  pop  de
-  pop  bc
   ret
 
 ; ---------------------------------------------------------

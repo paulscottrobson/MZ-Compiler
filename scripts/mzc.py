@@ -374,9 +374,7 @@ c = Compiler()
 src = """
 : main
 
-break 
 debug halt
-
  """.replace("\n"," ")
 print(src)
 c.compileLine(src)
@@ -384,6 +382,5 @@ c.save()
 
 #
 # TODO: Missing control words.
-# TODO: Test I/O words (screen.write.char, inkey,screen.mode.*)
-# TODO: Rethink other I/O (in screen. ?)
+# TODO: Wrapper
 #

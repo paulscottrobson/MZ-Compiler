@@ -1,3 +1,5 @@
+; @codeonly
+
 ; *********************************************************************************
 ; *********************************************************************************
 ;
@@ -15,8 +17,8 @@
 ;						Call the SetMode for the Spectrum 48k 
 ;
 ; *********************************************************************************
-		
-SetMode_Spectrum48k:
+
+GFXInitialise:
 		push 	af 									; save registers
 		push 	bc
 
@@ -41,7 +43,7 @@ __cs2:	ld 		(hl),$47							; clear attribute memory
 		pop 	bc
 		pop 	af
 		ld 		hl,$1820 							; H = 24,L = 32, screen extent
-		ld 		de,WriteCharacter_Spectrum48k
+		ld 		de,GFXPrintCharacter
 		ret
 
 ; *********************************************************************************
@@ -50,7 +52,7 @@ __cs2:	ld 		(hl),$47							; clear attribute memory
 ;
 ; *********************************************************************************
 
-WriteCharacter_Spectrum48k:
+GFXPrintCharacter:
 		push 	af 									; save registers
 		push 	bc
 		push 	de

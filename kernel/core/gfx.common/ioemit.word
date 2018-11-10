@@ -1,4 +1,4 @@
-; @word io.emit
+; @codeonly
 		ld 		a,l
 PrintCharacter:
 		push 	de

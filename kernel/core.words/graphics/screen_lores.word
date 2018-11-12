@@ -1,4 +1,7 @@
-; @codeonly
+; @word gfx.mode.lowres
+SetModeLowres:
+		call 	GFXInitialiseLowRes
+		jp 		GFXInitialise
 
 ; *********************************************************************************
 ; *********************************************************************************
@@ -17,9 +20,7 @@
 ;
 ; *********************************************************************************
 
-; @codeonly
-
-GFXInitialise:
+GFXInitialiseLowRes:
 		push 	af
 		push 	bc
 		push 	de
@@ -46,12 +47,12 @@ LowClearScreen: 									; assume default palette :)
 		pop 	bc
 		pop 	af
 		ld 		hl,$0C10 							; resolution is 16x12 chars
-		ld 		de,GFXPrintCharacter
+		ld 		de,GFXPrintCharacterLowRes
 		ret
 ;
 ;		Print Character E Colour D @ HL
 ;
-GFXPrintCharacter:
+GFXPrintCharacterLowRes:
 		push 	af
 		push 	bc
 		push 	de

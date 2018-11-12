@@ -372,6 +372,7 @@ class Compiler(object):
 
 c = Compiler()
 src = """
+variable x
 : main
 
 debug halt

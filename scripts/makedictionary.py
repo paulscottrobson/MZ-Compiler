@@ -50,6 +50,11 @@ for l in keys:
 		#
 		image.addDictionary(wName,image.currentCodePage(),labels[l])
 		#
+		#		Special case. Initially only 'compile' and 'execute' are immediate words.
+		#
+		if wName == "compile" or wName == "execute":
+			image.xorLastTypeByte(15)
+		#
 		#		Set the type byte for macros to the macro length
 		#
 		if wType == "m":

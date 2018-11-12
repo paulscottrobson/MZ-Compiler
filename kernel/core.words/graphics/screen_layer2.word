@@ -1,4 +1,7 @@
-; @codeonly
+; @word gfx.mode.layer2
+SetModeLayer2:
+		call 	GFXInitialiseLayer2
+		jp 		GFXInitialise
 
 ; *********************************************************************************
 ; *********************************************************************************
@@ -18,7 +21,7 @@
 ; *********************************************************************************
 
 
-GFXInitialise:
+GFXInitialiseLayer2:
 		push 	af
 		push 	bc
 		push 	de
@@ -49,12 +52,12 @@ L2PClearBank: 										; assume default palette :)
 		pop 	bc
 		pop 	af
 		ld 		hl,$1820 							; still 32 x 24 	
-		ld 		de,GFXPrintCharacter
+		ld 		de,GFXPrintCharacterLayer2
 		ret
 ;
 ;		Print Character E, colour D, position HL
 ;
-GFXPrintCharacter:
+GFXPrintCharacterLayer2:
 		push 	af
 		push 	bc
 		push 	de

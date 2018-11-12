@@ -23,18 +23,32 @@ class MZImage(object):
 	#
 	def getSysInfo(self):
 		return self.sysInfo 
-		
+	#
+	#		Get list of currently known defining words (e.g. that require another following)
+	#		(has to be maintained manually, required for bootstrap injection)
+	#
+	def getDefiningWords(self):
+		return [ ":","variable","&&","!!","@@" ]
 	#
 	#		Return dictionary page
 	#
 	def dictionaryPage(self):
 		return 0x20
-
+	#
+	#		Return bootstrap page
+	#
+	def bootstrapPage(self):
+		raise Exception("No bootstrap page")
 	#
 	#		Return page with code in.
 	#
 	def currentCodePage(self):
 		return self.read(0,self.sysInfo+4)
+	#
+	#		Bootstrap paging - the size of chunks permitted.
+	#
+	def bootstrapPaging(self):
+		return 0x4000		
 	#
 	#		Set boot address
 	#

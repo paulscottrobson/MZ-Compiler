@@ -11,20 +11,18 @@
 
 import os,re,sys
 #
-#			Create file list of words, filtering if.xxx 
+#			Create file list of words
 #
-conditions = [x.lower() for x in sys.argv[1:]]
 fileList = []
-for root,dirs,files in os.walk("core"):
-	isOk = True
-	for p in root.split(os.sep):
-		if p[:3].lower() == "if.":
-			if p[3:].lower() not in conditions:
-				isOk = False
-	if isOk:
-		for f in files:
-			if f[-5:] == ".word":
-				fileList.append(root+os.sep+f)
+for root,dirs,files in os.walk("core.words"):
+	for f in files:
+		if f[-5:] == ".word":
+			fileList.append(root+os.sep+f)
+
+for root,dirs,files in os.walk("system.words"):
+	for f in files:
+		if f[-5:] == ".word":
+			fileList.append(root+os.sep+f)
 fileList.sort()
 #
 #			Work through them

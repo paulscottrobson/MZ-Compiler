@@ -1,9 +1,8 @@
-; @word gfx.initialise
+; @codeonly
 
-GraphicInitialise:
+GFXInitialise:
 		push 	de
 		push 	hl
-		call 	GFXInitialise
 		ld		(SIScreenDriver),de
 		ld 		a,l
 		ld 		(SIScreenWidth),a

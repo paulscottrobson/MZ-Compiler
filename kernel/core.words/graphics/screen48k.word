@@ -1,4 +1,7 @@
-; @codeonly
+; @word gfx.mode.48k
+SetMode48k:
+		call 	GFXInitialise48k
+		jp 		GFXInitialise
 
 ; *********************************************************************************
 ; *********************************************************************************
@@ -18,7 +21,7 @@
 ;
 ; *********************************************************************************
 
-GFXInitialise:
+GFXInitialise48k:
 		push 	af 									; save registers
 		push 	bc
 
@@ -43,7 +46,7 @@ __cs2:	ld 		(hl),$47							; clear attribute memory
 		pop 	bc
 		pop 	af
 		ld 		hl,$1820 							; H = 24,L = 32, screen extent
-		ld 		de,GFXPrintCharacter
+		ld 		de,GFXPrintCharacter48k
 		ret
 
 ; *********************************************************************************
@@ -52,7 +55,7 @@ __cs2:	ld 		(hl),$47							; clear attribute memory
 ;
 ; *********************************************************************************
 
-GFXPrintCharacter:
+GFXPrintCharacter48k:
 		push 	af 									; save registers
 		push 	bc
 		push 	de

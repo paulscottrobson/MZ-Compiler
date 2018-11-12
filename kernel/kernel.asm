@@ -23,7 +23,7 @@ FirstCodePage = $22
 Boot:		ld 		sp,(SIStack)					; reset Z80 Stack
 			di										; enable interrupts
 			nextreg	7,2								; set turbo port (7) to 2 (14Mhz)
-			call 	GraphicInitialise 				; initialise and clear screen.
+			call 	SetMode48k 						; initialise and clear screen.
 			ld 		a,(SIBootCodePage) 				; get the page to start
 			nextreg $56,a
 			inc 	a

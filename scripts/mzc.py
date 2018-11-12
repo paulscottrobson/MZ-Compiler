@@ -20,7 +20,7 @@ import re,sys
 
 class CompilerException(Exception):
 	def __init__(self,errorMsg):
-		Exception.__init__()
+		Exception.__init__(self)
 		self.message = errorMsg
 
 # ***************************************************************************************
@@ -115,6 +115,7 @@ class Dictionary(object):
 	def __init__(self,image):
 		self.image = image
 		self.elements = {}
+		self.lastElement = None
 		self.loadImageDictionary()
 	#
 	#		Load the dictionary from the image into a Python structure
@@ -169,6 +170,14 @@ class Dictionary(object):
 		if entry.getName() in self.elements:
 			raise CompilerException("Duplicate word name '{0}'".format(entry.getName()))
 		self.elements[entry.getName()] = entry 
+		self.lastElement = entry
+	#
+	#		Get last entry
+	#
+	def getLastEntry(self):
+		if self.lastElement is None:
+			raise CompilerException("No definition to modify")
+		return self.lastElement
 	#
 	#		Synchronise the dictionary in the image memory with the Python version
 	#
@@ -194,6 +203,9 @@ class Compiler(object):
 		self.sourceAddress = self.image.read(0,si+0) + self.image.read(0,si+1) * 256
 		self.dictionary = Dictionary(self.image)
 		self.echo = False
+		self.ifTarget = None
+		self.beginTarget = None
+		self.forTarget = None
 		#print("{0:x} {1:x}".format(self.sourcePage,self.sourceAddress))
 	#
 	#		Save back out. Update source position
@@ -326,16 +338,38 @@ class Compiler(object):
 		#
 		# 							if .. then
 		#
-
+		if word == "-if" or word == "if":
+			self.ifTarget = self.createConditionalBranch(">=0" if word == "-if" else "=0")
+			return
+		if word == "then":
+			self.patchBranch(self.ifTarget,self.sourceAddress,"if")
+			return
 		#
 		# 							for .. i .. next
 		#
+		if word == "begin":
+			self.beginTarget = self.sourceAddress
+			return
 
+		if word == "again" or word == "until" or word == "-until":
+			if word == "again":
+				targetAddress = self.createConditionalBranch("always")
+			else:
+				targetAddress = self.createConditionalBranch(">=0" if word == "-until" else "=0")
+			self.patchBranch(targetAddress,self.beginTarget,"begin")
+			return
 		#
 		# 				 private, protected and other control words
 		#
+		if word == "private":
+			self.dictionary.getLastEntry().makePrivate()
+			return
+		if word == "protected":
+			self.dictionary.getLastEntry().makeProtected()
+			return
 
-		raise CompilerException("Unknown word '{0}'".format(word))
+		print(word)
+		raise CompilerException("Unknown word "+word)
 	#
 	#		Generate code to call page:address from here.
 	#
@@ -350,6 +384,31 @@ class Compiler(object):
 		self.cByte(0xEB) 													# EX DE,HL
 		self.cByte(0x21) 													# LD HL,xxxx
 		self.cWord(const)
+	#
+	#		Generate a conditional branch
+	#
+	def createConditionalBranch(self,branchType):
+		if branchType == "=0":
+			self.cByte(0x7C) 												# LD A,H
+			self.cByte(0xB5)												# OR L
+			self.cByte(0xCA)												# JP Z,xxxx
+		elif branchType == ">=0":
+			self.cByte(0xCB)												# BIT 7,H
+			self.cByte(0x7C)
+			self.cByte(0xCA)												# JP Z,xxxx
+		elif branchType == "always":
+			self.cByte(0xC3)												# JP xxxx
+		patchAddress = self.sourceAddress
+		self.cWord(0)														# dummy target address
+		return patchAddress
+	#
+	#		Close a conditional branch
+	#
+	def patchBranch(self,patchAddress,targetAddress,errorInfo):
+		if targetAddress is None:
+			raise CompilerException("Missing {0} in structure".format(errorInfo))
+		self.image.write(self.sourcePage,patchAddress,targetAddress & 0xFF)
+		self.image.write(self.sourcePage,patchAddress+1,targetAddress >> 8)
 	#
 	#		Generate an inline string and return its logical address
 	#
@@ -372,8 +431,11 @@ class Compiler(object):
 
 c = Compiler()
 src = """
-variable x
-: main
+: main2
+
+begin 0 until
+begin 1 -until
+begin 2 again
 
 debug halt
  """.replace("\n"," ")
@@ -382,6 +444,6 @@ c.compileLine(src)
 c.save()	
 
 #
-# TODO: Missing control words.
+# TODO: for/i/next
 # TODO: Wrapper
 #
